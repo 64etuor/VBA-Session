@@ -1,0 +1,50 @@
+Sub btn_def_save()
+    Dim lastRow As Long
+    Dim lastCol As Long
+    Dim filePath As String
+    Dim fileName As String
+    Dim sheetName As String
+    Dim copyRange As Range
+    Dim dateRange As Range
+    Dim wb As Workbook
+    Dim ws As Worksheet
+
+    ' Get the last row and column of data in def_input
+    lastRow = Sheets("def_input").Cells(Rows.Count, "A").End(xlUp).Row
+    lastCol = Sheets("def_input").Cells(6, Columns.Count).End(xlToLeft).Column
+    
+    ' Set the range to copy
+    Set copyRange = Sheets("def_input").Range("A6", Cells(lastRow, lastCol))
+    
+    ' Get the file path, file name, and sheet name
+    filePath = ThisWorkbook.Path & "\db\"
+    fileName = "def_raw.xlsx"
+    sheetName = "def_raw"
+    
+    ' Check if the workbook exists and open it; otherwise, create a new workbook
+    If Dir(filePath & fileName) <> "" Then
+        Set wb = Workbooks.Open(filePath & fileName)
+        Set ws = wb.Sheets(sheetName)
+        ' Clear existing data before pasting new data
+        ws.Cells.Clear
+    Else
+        Set wb = Workbooks.Add
+        wb.SaveAs Filename:=filePath & fileName
+        Set ws = wb.Sheets(1)
+        ws.Name = sheetName
+    End If
+    
+    ' Copy only values to the new workbook
+    ws.Range("A1").Resize(copyRange.Rows.Count, copyRange.Columns.Count).Value = copyRange.Value
+    
+    ' Format column J as date
+    lastRow = ws.Cells(Rows.Count, "J").End(xlUp).Row
+    Set dateRange = ws.Range("J2:J" & lastRow)
+    dateRange.NumberFormat = "yyyy-mm-dd"
+    
+    ' Save and close the workbook
+    wb.Save
+    wb.Close
+    
+    MsgBox "성공적으로 저장을 완료했습니다."
+End Sub
